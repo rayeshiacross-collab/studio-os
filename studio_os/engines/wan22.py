@@ -3,6 +3,8 @@ Open-source video generation engine using ComfyUI + Wan 2.2.
 
 All generation is local and free. Character consistency is enforced
 via CanonicalCharacter conditioning (LoRAs + reference images).
+
+Workflow template: workflows/wan22_character_locked_t2v.json
 """
 
 from pathlib import Path
@@ -19,6 +21,7 @@ class Wan22Engine:
 
     def __init__(self, comfyui_url: str = "http://localhost:8188"):
         self.comfyui_url = comfyui_url
+        self.workflow_template = Path(__file__).parent.parent.parent / "workflows" / "wan22_character_locked_t2v.json"
 
     async def generate_clip(
         self,
@@ -37,7 +40,6 @@ class Wan22Engine:
             output_path = Path(f"./renders/{uuid.uuid4()}.mp4")
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Build workflow payload for ComfyUI API
         workflow = self._build_wan22_workflow(
             prompt=prompt,
             conditioning=character_conditioning or {},
@@ -46,33 +48,46 @@ class Wan22Engine:
         )
 
         # TODO: POST to ComfyUI /prompt endpoint and poll for completion
-        # For now, stub that records the request
         print(f"[Wan22] Generating clip → {output_path}")
         print(f"  Prompt: {prompt[:80]}...")
         if character_conditioning:
             print(f"  Character lock: {character_conditioning.get('trigger_word', 'ref-only')}")
+            if character_conditioning.get("lora_high"):
+                print(f"  High LoRA: {character_conditioning['lora_high']}")
+            if character_conditioning.get("lora_low"):
+                print(f"  Low LoRA: {character_conditioning['lora_low']}")
 
-        # Placeholder: in real use this waits for ComfyUI
         await asyncio.sleep(1)
-        output_path.write_text("stub video placeholder")  # replace with real file
-
+        output_path.write_text(json.dumps({"status": "stub", "workflow_nodes": list(workflow.keys())}))
         return output_path
 
     def _build_wan22_workflow(self, prompt: str, conditioning: Dict, duration: float, seed: int) -> dict:
         """
-        Returns a ComfyUI workflow dict for Wan 2.2.
-        Injects LoRA loaders and reference image conditioning when provided.
+        Load the template workflow and inject character LoRAs + prompt.
         """
-        workflow = {
-            "prompt": prompt,
-            "seed": seed,
-            "duration": duration,
-            "model": "wan2.2",
-        }
-        if conditioning.get("lora_high"):
-            workflow["lora_high_noise"] = conditioning["lora_high"]
-            workflow["lora_low_noise"] = conditioning.get("lora_low")
-            workflow["trigger"] = conditioning.get("trigger_word", "")
-        if conditioning.get("reference_images"):
-            workflow["reference_images"] = conditioning["reference_images"]
+        if self.workflow_template.exists():
+            workflow = json.loads(self.workflow_template.read_text())
+        else:
+            workflow = {}
+
+        # Inject prompt (node 1 is positive)
+        if "1" in workflow:
+            workflow["1"]["inputs"]["text"] = prompt + conditioning.get("prompt_suffix", "")
+
+        # Inject character LoRAs if present
+        if conditioning.get("lora_high") and "6" in workflow:
+            workflow["6"]["inputs"]["lora_name"] = Path(conditioning["lora_high"]).name
+        if conditioning.get("lora_low") and "8" in workflow:
+            workflow["8"]["inputs"]["lora_name"] = Path(conditioning["lora_low"]).name
+
+        # Seed
+        for node_id in ("10", "11"):
+            if node_id in workflow:
+                workflow[node_id]["inputs"]["seed"] = seed
+
+        # Approximate length from duration (16 fps default)
+        frames = max(16, int(duration * 16))
+        if "9" in workflow:
+            workflow["9"]["inputs"]["length"] = frames
+
         return workflow
