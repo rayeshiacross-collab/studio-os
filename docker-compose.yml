@@ -1,0 +1,41 @@
+# Open-source Studio OS stack
+# Uses local ComfyUI + Wan 2.2 (no paid APIs)
+
+version: "3.8"
+
+services:
+  api:
+    build: .
+    command: uvicorn studio_os.interfaces.api:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./characters:/app/characters
+      - ./renders:/app/renders
+    environment:
+      - DATABASE_URL=sqlite:///./studio.db
+
+  worker:
+    build: .
+    command: python -m studio_os.worker
+    volumes:
+      - ./characters:/app/characters
+      - ./renders:/app/renders
+      - ./models:/app/models
+    # GPU: uncomment when running on host with NVIDIA
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  # ComfyUI + Wan 2.2 (run separately or use official ComfyUI Docker)
+  # comfyui:
+  #   image: yanwk/comfyui-boot:latest
+  #   ports:
+  #     - "8188:8188"
+  #   volumes:
+  #     - ./models:/root/ComfyUI/models
+  #     - ./renders:/root/ComfyUI/output

@@ -1,0 +1,18 @@
+# Studio OS - Open Source Dependencies
+# All free. No paid APIs.
+
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.9.0
+python-multipart
+aiofiles
+
+# Optional but recommended for quality / consistency checks
+numpy
+Pillow
+
+# For GPU detection (when running on host with CUDA)
+# torch  # install separately with CUDA if needed
+
+# ComfyUI is run as a separate service (see docker-compose)
+# Wan 2.2 models are downloaded into ComfyUI/models/
