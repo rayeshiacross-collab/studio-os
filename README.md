@@ -4,6 +4,8 @@
 
 Studio OS produces shorts, trailers, features, and series using free local open-source models (primarily **ComfyUI + Wan 2.2**). No paid APIs required.
 
+> **Canonical reference**: See [`docs/MANUAL.md`](docs/MANUAL.md) for principles, cost model, free/local-first path, and decision log.
+
 ## Four Production Lanes
 
 | Lane | Purpose | Concurrency | Approval | Consistency Focus |
@@ -38,7 +40,7 @@ Handoffs between stages always re-anchor to the canonical references. Free-runni
 docker compose up -d
 ```
 
-See `docs/` for character locking workflow and ComfyUI setup.
+See `docs/` for the operations manual, character locking workflow, and series continuity rules.
 
 ## License
 
