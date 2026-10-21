@@ -5,6 +5,7 @@
 Studio OS produces shorts, trailers, features, and series using free local open-source models (primarily **ComfyUI + Wan 2.2**). No paid APIs required.
 
 > **For creators**: See [`docs/CREATOR_MANUAL.md`](docs/CREATOR_MANUAL.md) — simple step-by-step for making videos with locked characters.  
+> **Video editing**: See [`docs/VIDEO_EDITING.md`](docs/VIDEO_EDITING.md) — free/open-source editors to finish your clips.  
 > **Canonical reference**: See [`docs/MANUAL.md`](docs/MANUAL.md) for principles, cost model, and decisions.
 
 ## Four Production Lanes
@@ -41,7 +42,7 @@ Handoffs between stages always re-anchor to the canonical references. Free-runni
 docker compose up -d
 ```
 
-See `docs/` for the creator manual, operations manual, character locking workflow, and series continuity rules.
+See `docs/` for the creator manual, video editing recommendations, operations manual, character locking workflow, and series continuity rules.
 
 ## License
 
