@@ -9,6 +9,7 @@ A simple guide for making videos with consistent characters using Studio OS.
 - Studio OS running (local preferred)
 - A character you want to use (or create one)
 - A clear idea of the video (short, scene, or episode)
+- Free video editor (see recommendations below)
 
 ---
 
@@ -80,6 +81,35 @@ For Series:
 
 ---
 
+## Step 6: Edit and Finish
+
+Studio OS generates short clips. Use a free editor to:
+- Join clips into longer scenes or episodes
+- Add titles, music, sound effects, and subtitles
+- Color grade for consistency
+- Export the final video
+
+### Recommended Free Video Editors
+
+| Software | Type | Best For | Notes |
+|----------|------|----------|-------|
+| **DaVinci Resolve** (free) | Desktop | Best overall finishing | Extremely powerful color, audio, and editing. No watermark. Free version is excellent. |
+| **Shotcut** | Open source | Lightweight editing | Cross-platform, no watermark, good for older computers. |
+| **Kdenlive** | Open source | Full timeline editing | Solid multi-track editor, proxy support, active development. |
+| **OpenShot** | Open source | Beginners | Easy drag-and-drop, 3D titles, simple effects. |
+| **LosslessCut** | Open source | Quick cuts | Trim and join without re-encoding (fast and quality-preserving). |
+| **Blender** | Open source | VFX / compositing | Use if you need advanced effects or motion graphics. |
+| **FFmpeg** | Open source CLI | Batch processing | Command-line tool for converting, concatenating, or basic edits. |
+
+**Recommended starting point**:
+- Beginners → OpenShot or Shotcut
+- Serious finishing → DaVinci Resolve (free)
+- Pure open-source preference → Kdenlive or Shotcut
+
+All of these are free and fit the Studio OS goal of zero ongoing cost.
+
+---
+
 ## Quick Tips for Better Results
 
 - **Face consistency**: Always use the registered character. Don't describe the face in the prompt.
@@ -87,6 +117,7 @@ For Series:
 - **Length**: Start with short clips and chain them if you need longer scenes.
 - **Lighting**: Mention lighting (night, soft daylight, neon, etc.) so scenes match better.
 - **Local is best**: Running on your own computer is free and private.
+- **Editing**: Export clips from Studio OS, then finish them in Resolve or Kdenlive for a polished result.
 
 ---
 
@@ -98,6 +129,7 @@ For Series:
 | Clothes wrong | Be more specific in the prompt |
 | Clip too short or blurry | Lower resolution or fewer frames, then upscale later if needed |
 | Series continuity failed | Re-register the character or check that you didn't change the references |
+| Need longer video | Generate multiple clips and edit them together in Resolve/Shotcut/Kdenlive |
 
 ---
 
@@ -106,6 +138,6 @@ For Series:
 - Same person, different clothes = good.
 - Different face = not allowed.
 - Approve before moving forward on series work.
-- Free and open-source is the goal — local hardware keeps costs at zero.
+- Free and open-source is the goal — local hardware + free editors keep costs at zero.
 
-That's it. Create, lock the character, generate, review, approve.
+That's it. Create, lock the character, generate, review, edit, approve.
