@@ -14,7 +14,7 @@ Studio OS produces shorts, trailers, features, and series using free local open-
 |------|---------|-------------|----------|-------------------|
 | **Artist** | High-quality feature films / premium content | 1 | Required | Highest |
 | **Platform** | SaaS for authors (shorts/trailers) | 5 | Optional | High |
-| **Farm** | High-volume shorts | 20 | None | Medium |
+| **Farm** | High-volume shorts | 8 | None | Medium |
 | **Series** | Multi-episode TV / YouTube series | 2 | Required | **Strict (locked characters)** |
 
 ## Character Consistency (Must-Have)
@@ -25,28 +25,43 @@ Every character has a **Canonical Character Profile**:
 - Locked identity embedding / reference conditioning passed to every generation
 - Clothes and scene can change; face and core appearance do not
 
-Handoffs between stages always re-anchor to the canonical references. Free-running agents are avoided for final output — controlled pipelines with quality gates.
-
 ## Stack
 
-- **Rendering**: ComfyUI + Wan 2.2 (Apache 2.0, fully open, commercial-friendly)
-- **Consistency**: Character LoRAs + reference image conditioning + face detailer passes
-- **Orchestration**: Python (asyncio) with state machine, cost tracking, resource pool
-- **API**: FastAPI
-- **Ops**: Docker Compose, Woodpecker CI, optional Gitea for GPU job queueing
+- **Rendering**: ComfyUI + Wan 2.2 (Apache 2.0)
+- **Consistency**: Character LoRAs + reference conditioning
+- **Orchestration**: Async Python queue + Series continuity checks
+- **API**: FastAPI (`/generate`, `/characters`, `/status/{id}`)
+- **Ops**: Docker Compose (ComfyUI expected on host port 8188)
 
-## Quick Start
+## Quick Start (Series or Farm ready)
+
+1. Run ComfyUI on the host with Wan 2.2 models loaded (port 8188).
+2. Clone and start Studio OS:
 
 ```bash
-# Requires NVIDIA GPU with sufficient VRAM for Wan 2.2 (16GB+ recommended)
-docker compose up -d
+docker compose up -d --build
 ```
 
-See `docs/` for the creator manual, video editing recommendations, operations manual, character locking workflow, and series continuity rules.
+3. Register a character:
+
+```bash
+curl -X POST http://localhost:8000/characters \
+  -H "Content-Type: application/json" \
+  -d '{"id":"alice","name":"Alice","trigger_word":"char_alice_v1","reference_images":["./characters/alice/face1.jpg"],"lora_high_noise":"./models/alice_high.safetensors","lora_low_noise":"./models/alice_low.safetensors"}'
+```
+
+4. Generate a Series episode (or switch lane to `farm`):
+
+```bash
+curl -X POST http://localhost:8000/generate \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"Alice walks through a rainy neon city at night, red jacket, determined","lane":"series","character_id":"alice","series_id":"veil_chronicles","episode_number":1,"duration_seconds":5}'
+```
+
+5. Check status: `curl http://localhost:8000/status/<order_id>`
+
+Outputs land in `./renders/`. Series lane runs continuity checks and records approved baselines. Farm is for higher volume with looser gates.
 
 ## License
 
 Open source. Use freely. Models follow their own licenses (Wan 2.2 is Apache 2.0).
-
----
-Built from original submissions, updated for free open-source rendering and series-grade continuity.
