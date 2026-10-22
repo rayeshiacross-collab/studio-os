@@ -2,7 +2,7 @@
 
 `python -m studio_os.motion_batch` connects reviewed scene plans to an existing local ComfyUI installation. It does not use a paid API, generate substitute narration, publish content, or fall back to still images.
 
-The Harvest scripts are prepared for the **private** `rayeshiacross-collab/rebootv2-autopilot/harvest` directory. Their content import is pending explicit owner approval after an automatic approval-review block; consult the Drive Harvest handoff for current intake status. This public repository contains only reusable software and synthetic test fixtures. Source documents and videos remain untouched in Drive.
+The owner-approved content intake is stored in the owner's private production repository. This public repository contains only reusable software and synthetic test fixtures. Source documents and videos remain untouched in Drive.
 
 ## Inputs
 
