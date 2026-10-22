@@ -65,3 +65,7 @@ Outputs land in `./renders/`. Series lane runs continuity checks and records app
 ## License
 
 Open source. Use freely. Models follow their own licenses (Wan 2.2 is Apache 2.0).
+
+## Motion production batches
+
+Use [the motion-only batch runner](docs/MOTION_BATCH.md) for reviewed narration and ordered action scenes. Static outputs are rejected; ComfyUI/Wan must be available. Content remains in the private production repo.
