@@ -1,5 +1,6 @@
 # Open-source Studio OS stack
 # Uses local ComfyUI + Wan 2.2 (no paid APIs)
+# Run ComfyUI separately on the host (port 8188) with Wan 2.2 models loaded.
 
 version: "3.8"
 
@@ -12,8 +13,11 @@ services:
     volumes:
       - ./characters:/app/characters
       - ./renders:/app/renders
+      - ./series_continuity:/app/series_continuity
     environment:
-      - DATABASE_URL=sqlite:///./studio.db
+      - COMFYUI_URL=http://host.docker.internal:8188
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   worker:
     build: .
@@ -21,8 +25,13 @@ services:
     volumes:
       - ./characters:/app/characters
       - ./renders:/app/renders
+      - ./series_continuity:/app/series_continuity
       - ./models:/app/models
-    # GPU: uncomment when running on host with NVIDIA
+    environment:
+      - COMFYUI_URL=http://host.docker.internal:8188
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # Uncomment for GPU passthrough if ComfyUI is also containerized
     # deploy:
     #   resources:
     #     reservations:
@@ -31,7 +40,7 @@ services:
     #           count: all
     #           capabilities: [gpu]
 
-  # ComfyUI + Wan 2.2 (run separately or use official ComfyUI Docker)
+  # Optional: run ComfyUI in the same compose (requires models volume)
   # comfyui:
   #   image: yanwk/comfyui-boot:latest
   #   ports:
