@@ -17,6 +17,10 @@ jobs:
           python-version: '3.11'
       - name: Install dependencies
         run: python -m pip install -r requirements.txt pytest
+      - name: Install fixture media tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
       - name: Verify fixture media tools
         run: command -v ffmpeg && command -v ffprobe
       - name: Compile Python modules
