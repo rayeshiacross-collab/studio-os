@@ -1,13 +1,6 @@
 name: Studio OS startup smoke test
 on:
-  push:
-    paths:
-      - 'Dockerfile'
-      - 'docker-compose.yml'
-      - 'requirements.txt'
-      - 'studio_os/**'
-      - 'workflows/**'
-      - '.github/workflows/studio-smoke.yml'
+  # Owner hold: service startup must be explicitly requested, never triggered by repair commits.
   workflow_dispatch:
 
 jobs:

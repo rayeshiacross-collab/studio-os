@@ -95,7 +95,7 @@ async def health():
         raise HTTPException(503, "Orchestrator not ready")
     url = orchestrator.engine.comfyui_url
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
+        async with httpx.AsyncClient(timeout=5.0, trust_env=False, follow_redirects=False) as client:
             response = await client.get(f"{url}/system_stats")
             response.raise_for_status()
     except (httpx.HTTPError, ValueError):
