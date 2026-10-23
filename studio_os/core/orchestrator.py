@@ -47,6 +47,7 @@ class Orchestrator:
         
         self.queue: asyncio.Queue = asyncio.Queue()
         self.active: Dict[str, ProductionOrder] = {}
+        self.pending: Dict[str, ProductionOrder] = {}
         self.completed: List[ProductionOrder] = []
         self.failed: List[ProductionOrder] = []
         
@@ -73,6 +74,7 @@ class Orchestrator:
             order.metadata["continuity_report"] = report
         
         order.status = "queued"
+        self.pending[order.id] = order
         await self.queue.put(order)
         return order.id
 
@@ -83,6 +85,7 @@ class Orchestrator:
             except asyncio.TimeoutError:
                 continue
             
+            self.pending.pop(order.id, None)
             self.active[order.id] = order
             order.status = "running"
             try:
