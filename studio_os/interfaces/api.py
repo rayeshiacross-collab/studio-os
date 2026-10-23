@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from pathlib import Path
 import asyncio
+import uuid
 from typing import Optional
 
 from ..core.orchestrator import Orchestrator, ProductionOrder, LoopType
@@ -43,7 +44,7 @@ async def generate(req: GenerateRequest):
         raise HTTPException(400, f"Unknown lane: {req.lane}")
     
     order = ProductionOrder(
-        id=str(asyncio.get_event_loop().time()).replace(".", ""),
+        id=uuid.uuid4().hex,
         loop=loop,
         project_id=req.series_id or "default",
         prompt=req.prompt,
@@ -67,7 +68,7 @@ async def status(order_id: str):
             return {"status": "failed", "error": o.error}
     if order_id in orchestrator.active:
         return {"status": "running"}
-    return {"status": "queued"}
+    raise HTTPException(404, "Unknown order ID")
 
 @app.post("/characters")
 async def register_character(c: CharacterRegister):
