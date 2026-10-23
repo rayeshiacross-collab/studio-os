@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "id": "FD_EP11",
+  "title": "She Stayed Too Long Because Nothing Was “Bad Enough”",
+  "series": "REBOOTv2 / The First Domino",
+  "lane": "series",
+  "engine": "ComfyUI / Wan 2.2",
+  "visual_style": "realistic human cinematic narrative",
+  "source_repository": "rayeshiacross-collab/rebootv2-autopilot",
+  "source_script": "EP11_Narration_v1.txt",
+  "narration_audio": {
+    "status": "owner_has_audio",
+    "source_path": "EP11_Female_Warm_Review_v2.mp3",
+    "use_existing_recording_only": true,
+    "generate_voice": false,
+    "approval": "owner_listening_required"
+  },
+  "character_consistency": "required_for_Claire",
+  "frames": "1080x1920",
+  "production_state": "INTAKE_ONLY_NO_RENDER",
+  "release_approved": false,
+  "published": false,
+  "note": "Requires verified Wan workflow, model server, exact owner-selected audio, character reference, and review; no automatic YouTube delivery."
+}
