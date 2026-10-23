@@ -68,6 +68,8 @@ async def status(order_id: str):
             return {"status": "failed", "error": o.error}
     if order_id in orchestrator.active:
         return {"status": "running"}
+    if order_id in orchestrator.pending:
+        return {"status": "queued"}
     raise HTTPException(404, "Unknown order ID")
 
 @app.post("/characters")
