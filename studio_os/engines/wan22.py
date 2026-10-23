@@ -23,7 +23,7 @@ class Wan22Engine:
     def __init__(self, comfyui_url: str = "http://localhost:8188"):
         self.comfyui_url = comfyui_url.rstrip("/")
         self.workflow_template = Path(__file__).parent.parent.parent / "workflows" / "wan22_character_locked_t2v.json"
-        self.client = httpx.AsyncClient(timeout=300.0)
+        self.client = httpx.AsyncClient(timeout=300.0, trust_env=False, follow_redirects=False)
 
     async def generate_clip(
         self,
