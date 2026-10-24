@@ -1,6 +1,5 @@
-# Open-source Studio OS stack
-# Uses local ComfyUI + Wan 2.2 (no paid APIs)
-# Run ComfyUI separately on the host (port 8188) with Wan 2.2 models loaded.
+# Studio OS — shared job store between API and worker
+# ComfyUI + Wan 2.2 must run on the host (port 8188).
 
 version: "3.8"
 
@@ -14,8 +13,13 @@ services:
       - ./characters:/app/characters
       - ./renders:/app/renders
       - ./series_continuity:/app/series_continuity
+      - ./job_store:/app/job_store
+      - ./workflows:/app/workflows
     environment:
       - COMFYUI_URL=http://host.docker.internal:8188
+      - JOB_STORE_DIR=/app/job_store
+      - RENDERS_DIR=/app/renders
+      - API_WORKERS=2
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -26,25 +30,13 @@ services:
       - ./characters:/app/characters
       - ./renders:/app/renders
       - ./series_continuity:/app/series_continuity
+      - ./job_store:/app/job_store
       - ./models:/app/models
+      - ./workflows:/app/workflows
     environment:
       - COMFYUI_URL=http://host.docker.internal:8188
+      - JOB_STORE_DIR=/app/job_store
+      - RENDERS_DIR=/app/renders
+      - NUM_WORKERS=2
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    # Uncomment for GPU passthrough if ComfyUI is also containerized
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [gpu]
-
-  # Optional: run ComfyUI in the same compose (requires models volume)
-  # comfyui:
-  #   image: yanwk/comfyui-boot:latest
-  #   ports:
-  #     - "8188:8188"
-  #   volumes:
-  #     - ./models:/root/ComfyUI/models
-  #     - ./renders:/root/ComfyUI/output
