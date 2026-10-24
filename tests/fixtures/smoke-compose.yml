@@ -1,0 +1,8 @@
+# CI boot test only: force the renderer unavailable without contacting a real host.
+services:
+  api:
+    environment:
+      COMFYUI_URL: http://127.0.0.1:1
+  worker:
+    environment:
+      COMFYUI_URL: http://127.0.0.1:1
