@@ -1,22 +1,30 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from pathlib import Path
+"""Studio OS FastAPI — shared job store, UUID orders, Series approve, ComfyUI health."""
+from __future__ import annotations
+
 import asyncio
+import os
+from pathlib import Path
 from typing import Optional
 
-from ..core.orchestrator import Orchestrator, ProductionOrder, LoopType
-from ..core.character_consistency import CanonicalCharacter
+import httpx
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
-app = FastAPI(title="Studio OS", version="0.2.0")
+from ..core.character_consistency import CanonicalCharacter
+from ..core.orchestrator import LoopType, Orchestrator
+
+app = FastAPI(title="Studio OS", version="0.3.0")
 orchestrator: Optional[Orchestrator] = None
+
 
 class GenerateRequest(BaseModel):
     prompt: str
-    lane: str = "series"  # series | farm | artist | platform
+    lane: str = "series"
     character_id: Optional[str] = None
     series_id: Optional[str] = None
     episode_number: Optional[int] = None
     duration_seconds: float = 5.0
+
 
 class CharacterRegister(BaseModel):
     id: str
@@ -26,12 +34,17 @@ class CharacterRegister(BaseModel):
     lora_high_noise: Optional[str] = None
     lora_low_noise: Optional[str] = None
 
+
+def _comfy_url() -> str:
+    return os.getenv("COMFYUI_URL", "http://host.docker.internal:8188").rstrip("/")
+
+
 @app.on_event("startup")
 async def startup():
     global orchestrator
-    orchestrator = Orchestrator(comfyui_url="http://host.docker.internal:8188")
-    # Start background workers (non-blocking)
-    asyncio.create_task(orchestrator.start(num_workers=2))
+    orchestrator = Orchestrator(comfyui_url=_comfy_url())
+    asyncio.create_task(orchestrator.start(num_workers=int(os.getenv("API_WORKERS", "2"))))
+
 
 @app.post("/generate")
 async def generate(req: GenerateRequest):
@@ -41,9 +54,7 @@ async def generate(req: GenerateRequest):
         loop = LoopType(req.lane)
     except ValueError:
         raise HTTPException(400, f"Unknown lane: {req.lane}")
-    
-    order = ProductionOrder(
-        id=str(asyncio.get_event_loop().time()).replace(".", ""),
+    job = await orchestrator.submit(
         loop=loop,
         project_id=req.series_id or "default",
         prompt=req.prompt,
@@ -52,22 +63,37 @@ async def generate(req: GenerateRequest):
         episode_number=req.episode_number,
         duration_seconds=req.duration_seconds,
     )
-    oid = await orchestrator.submit(order)
-    return {"order_id": oid, "status": "queued"}
+    return {"order_id": job.id, "status": job.status, "error": job.error}
+
 
 @app.get("/status/{order_id}")
 async def status(order_id: str):
     if not orchestrator:
         raise HTTPException(500, "Not ready")
-    for o in orchestrator.completed:
-        if o.id == order_id:
-            return {"status": "done", "output": str(o.output_path)}
-    for o in orchestrator.failed:
-        if o.id == order_id:
-            return {"status": "failed", "error": o.error}
-    if order_id in orchestrator.active:
-        return {"status": "running"}
-    return {"status": "queued"}
+    job = orchestrator.store.get(order_id)
+    if not job:
+        raise HTTPException(404, "Unknown order_id")
+    return {
+        "order_id": job.id,
+        "status": job.status,
+        "output": job.output_path,
+        "error": job.error,
+        "lane": job.loop,
+    }
+
+
+@app.post("/approve/{order_id}")
+async def approve(order_id: str):
+    if not orchestrator:
+        raise HTTPException(500, "Not ready")
+    try:
+        job = orchestrator.approve(order_id)
+    except KeyError:
+        raise HTTPException(404, "Unknown order_id")
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"order_id": job.id, "status": job.status, "approved": True}
+
 
 @app.post("/characters")
 async def register_character(c: CharacterRegister):
@@ -82,8 +108,28 @@ async def register_character(c: CharacterRegister):
         lora_low_noise=Path(c.lora_low_noise) if c.lora_low_noise else None,
     )
     orchestrator.character_engine.register(char)
-    return {"id": c.id, "registered": True}
+    return {"id": c.id, "registered": True, "identity_hash": char.identity_hash}
+
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "comfyui": orchestrator.engine.comfyui_url if orchestrator else None}
+    comfy = _comfy_url()
+    comfy_ok = False
+    comfy_error = None
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            r = await client.get(f"{comfy}/system_stats")
+            comfy_ok = r.status_code == 200
+            if not comfy_ok:
+                r2 = await client.get(f"{comfy}/")
+                comfy_ok = r2.status_code < 500
+    except Exception as e:
+        comfy_error = str(e)
+    return {
+        "status": "ok",
+        "version": "0.3.0",
+        "comfyui_url": comfy,
+        "comfyui_reachable": comfy_ok,
+        "comfyui_error": comfy_error,
+        "job_store": str(orchestrator.store.root) if orchestrator else None,
+    }
