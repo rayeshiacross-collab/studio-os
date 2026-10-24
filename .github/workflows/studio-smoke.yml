@@ -7,6 +7,8 @@ jobs:
   boot:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      COMPOSE_FILE: docker-compose.yml:tests/fixtures/smoke-compose.yml
     steps:
       - uses: actions/checkout@v4
       - name: Build and boot services
@@ -16,12 +18,7 @@ jobs:
       - name: Check API and workflow packaging
         run: |
           set -eu
-          for i in $(seq 1 30); do
-            if curl --fail --silent http://localhost:8000/health > /tmp/health.json; then break; fi
-            sleep 2
-          done
-          cat /tmp/health.json
-          python -c 'import json; assert json.load(open("/tmp/health.json"))["status"]=="ok"'
+          python scripts/check_api_smoke.py --expect-comfyui unreachable
           docker compose exec -T api test -s /app/workflows/wan22_character_locked_t2v.json
           curl --fail --silent -X POST http://localhost:8000/characters -H 'Content-Type: application/json' -d '{"id":"smoke","name":"Smoke Character","trigger_word":"smoke"}' | tee /tmp/character.json
           python -c 'import json; assert json.load(open("/tmp/character.json"))["registered"] is True'
